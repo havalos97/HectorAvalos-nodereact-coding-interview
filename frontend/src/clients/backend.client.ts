@@ -9,6 +9,6 @@ export class BackendClient {
   }
 
   async getAllUsers(): Promise<{ data: IUserProps[] }> {
-    return (await axios.get(`${this.baseUrl}/people`, {})).data;
+    return (await axios.get(`${this.baseUrl}/people/all`, {})).data;
   }
 }

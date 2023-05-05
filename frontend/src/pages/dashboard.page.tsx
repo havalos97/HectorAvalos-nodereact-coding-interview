@@ -1,9 +1,9 @@
-import React, { FC, useState, useRef, useEffect, useMemo } from "react";
+import React, { FC, useState, useEffect, useMemo } from "react";
 
 import { RouteComponentProps } from "@reach/router";
 import { IUserProps } from "../dtos/user.dto";
 import { UserCard } from "../components/users/user-card";
-import { CircularProgress } from "@mui/material";
+import { Button, CircularProgress, Grid, TextField } from "@mui/material";
 
 import { BackendClient } from "../clients/backend.client";
 
@@ -13,7 +13,7 @@ export const DashboardPage: FC<RouteComponentProps> = () => {
   const [userList, setUserList] = useState<IUserProps[]>([]);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<string | null>(null);
+  const [filter, setFilter] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -27,13 +27,15 @@ export const DashboardPage: FC<RouteComponentProps> = () => {
   }, []);
 
   const filteredUserList = useMemo(() => {
-    return filter !== '' && filter !== null ? userList.filter((user) => {
-      return user.first_name.toLowerCase().includes(filter)
-    }) : userList
+    if (filter !== '') {
+      return userList.filter((user) =>
+        user.first_name.toLowerCase().includes(filter.trim())
+      )
+    }
+    return userList
   }, [filter, userList])
 
   const paginatedList = useMemo(() => {
-    console.log(filteredUserList)
     return filteredUserList.slice((page - 1) * 5, (page * 5))
   }, [page, filteredUserList])
 
@@ -42,33 +44,69 @@ export const DashboardPage: FC<RouteComponentProps> = () => {
   }, [filteredUserList])
 
   return (
-    <div style={{ paddingTop: "30px" }}>
-      <input type="text" onChange={(e) => setFilter(e.target.value)} />
+    <div style={{ paddingTop: "3rem" }}>
+      <Grid container>
+        <Grid item columns={12} md={4} />
+        <Grid item columns={12} md={4}>
+          <TextField
+            type="text"
+            placeholder="Search..."
+            variant="outlined"
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            fullWidth
+          />
+        </Grid>
+      </Grid>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
-        {loading ? (
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              height: "100vh",
-            }}
-          >
-            <CircularProgress size="60px" />
-          </div>
-        ) : (
-          <div>
-            {paginatedList.length
-              ? paginatedList.map((user) => {
-                  return <UserCard key={user.id} {...user} />;
-                })
-              : null}
-          </div>
-        )}
+        {
+          loading ? (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "100vh",
+              }}
+            >
+              <CircularProgress size="60px" />
+            </div>
+          ) : (
+            <div>
+              {
+                paginatedList.length
+                  ? paginatedList.map((user) =>
+                      <UserCard key={user.id} {...user} />
+                    )
+                  : null
+              }
+            </div>
+          )
+        }
       </div>
-      <button onClick={() => setPage(page - 1)} disabled={page <= 1}>Prev</button>
-      <div>Page {page} of {totalPages}</div>
-      <button onClick={() => setPage(page + 1)} disabled={page >= totalPages}>Next</button>
+      <Grid alignItems="center" justifyContent="center" container>
+        <Grid item columns={12} md={1}>
+          <Button
+            variant="contained"
+            onClick={() => setPage(page - 1)}
+            disabled={page <= 1}
+          >
+            Prev
+          </Button>
+        </Grid>
+        <Grid item columns={12} md={1}>
+          Page {page} of {totalPages}
+        </Grid>
+        <Grid item columns={12} md={1}>
+          <Button
+            variant="contained"
+            onClick={() => setPage(page + 1)}
+            disabled={page >= totalPages}
+          >
+            Next
+          </Button>
+        </Grid>
+      </Grid>
     </div>
   );
 };
